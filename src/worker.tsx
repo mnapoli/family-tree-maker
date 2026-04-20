@@ -46,6 +46,20 @@ app.get("/", (c) => {
   });
 
   const previewSvg = tree ? svgString(tree) : "";
+  const isDev = c.env.DEV === "true";
+  const devHead = isDev
+    ? `<script type="module">
+      import RefreshRuntime from "http://localhost:5173/@react-refresh"
+      RefreshRuntime.injectIntoGlobalHook(window)
+      window.$RefreshReg$ = () => {}
+      window.$RefreshSig$ = () => (type) => type
+      window.__vite_plugin_react_preamble_installed__ = true
+    </script>
+    <script type="module" src="http://localhost:5173/@vite/client"></script>`
+    : `<link rel="stylesheet" href="/assets/client.css" />`;
+  const clientScript = isDev
+    ? `<script type="module" src="http://localhost:5173/src/client.tsx"></script>`
+    : `<script type="module" src="/assets/client.js"></script>`;
 
   const html = `<!doctype html>
 <html lang="en">
@@ -56,13 +70,13 @@ app.get("/", (c) => {
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/app.css" />
+  ${devHead}
 </head>
 <body>
   <div id="root" data-initial='${initialData.replace(/'/g, "&#39;").replace(/</g, "&lt;")}'>
     <div class="ssr-preview">${previewSvg}</div>
   </div>
-  <script type="module" src="/assets/client.js"></script>
+  ${clientScript}
 </body>
 </html>`;
   return c.html(html);

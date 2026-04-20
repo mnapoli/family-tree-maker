@@ -1,3 +1,4 @@
+import "./app.css";
 import { createRoot } from "react-dom/client";
 import { App } from "./components/App.tsx";
 import type { FamilyTree } from "./schema.ts";

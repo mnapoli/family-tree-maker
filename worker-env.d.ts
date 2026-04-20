@@ -10,4 +10,5 @@ declare module "*.wasm" {
 
 interface Env {
   ASSETS: Fetcher;
+  DEV?: string;
 }

@@ -129,9 +129,6 @@ export function layoutTree(tree: FamilyTree): TreeLayout {
   const fatherDateW = fatherDateText ? textWidth(fatherDateText, FONT.date) : 0;
   const motherDateW = motherDateText ? textWidth(motherDateText, FONT.date) : 0;
 
-  const fatherBlockW = fatherNameW + (fatherDateW ? fatherDateW + GAP.dateMargin : 0);
-  const motherBlockW = motherNameW + (motherDateW ? motherDateW + GAP.dateMargin : 0);
-
   // ── grandparent pair widths ────────────────────────────────────────
   const pairContentW = (p?: Couple) => {
     if (!p) return 0;
@@ -152,14 +149,23 @@ export function layoutTree(tree: FamilyTree): TreeLayout {
   const baseParentCenterDist = fatherNameW / 2 + GAP.parentPair + motherNameW / 2;
   const extraPush = Math.max(0, requiredParentCenterDist - baseParentCenterDist);
   const parentPairGap = GAP.parentPair + extraPush;
-  const parentsContentW = fatherBlockW + parentPairGap + motherBlockW;
 
-  const gpRowW = (leftGpW && rightGpW) ? leftGpW + GAP.gpPairBlocks + rightGpW
-    : Math.max(leftGpW, rightGpW);
-
-  // ── overall canvas width ───────────────────────────────────────────
-  const contentW = Math.max(childrenContentW, parentsContentW, gpRowW);
-  const width = contentW + 2 * GAP.marginX;
+  // ── canvas width: place marriageCenter at canvas center ────────────
+  // Compute how far content extends left/right of marriageCenter; the canvas
+  // must be wide enough to hold the larger side symmetrically so children
+  // (centered on marriageCenter) don't collide with the margin.
+  const leftFromMarriage = Math.max(
+    parentPairGap / 2 + fatherNameW + (fatherDateW ? GAP.dateMargin + fatherDateW : 0),
+    leftGpW ? parentPairGap / 2 + fatherNameW / 2 + leftGpW / 2 : 0,
+    childrenContentW / 2,
+  );
+  const rightFromMarriage = Math.max(
+    parentPairGap / 2 + motherNameW + (motherDateW ? GAP.dateMargin + motherDateW : 0),
+    rightGpW ? parentPairGap / 2 + motherNameW / 2 + rightGpW / 2 : 0,
+    childrenContentW / 2,
+  );
+  const halfExtent = Math.max(leftFromMarriage, rightFromMarriage);
+  const width = 2 * halfExtent + 2 * GAP.marginX;
   const centerX = width / 2;
 
   // ── vertical positions ─────────────────────────────────────────────
@@ -184,20 +190,14 @@ export function layoutTree(tree: FamilyTree): TreeLayout {
     ? childDateY + GAP.marginY
     : parentsJoinerY + GAP.marginY;
 
-  // ── parents: build x positions ─────────────────────────────────────
-  const parentsLeft = centerX - parentsContentW / 2;
-  let px = parentsLeft;
-  if (fatherDateW) px += fatherDateW + GAP.dateMargin;
-  const fatherNameLeft = px;
-  const fatherNameCenter = px + fatherNameW / 2;
-  const fatherNameRight = px + fatherNameW;
-  px = fatherNameRight + parentPairGap;
-  const motherNameLeft = px;
-  const motherNameCenter = px + motherNameW / 2;
-  const motherNameRight = px + motherNameW;
-  px = motherNameRight;
-  if (motherDateW) px += GAP.dateMargin;
-  const marriageCenter = (fatherNameRight + motherNameLeft) / 2;
+  // ── parents: build x positions centered on centerX (= marriageCenter) ─
+  const marriageCenter = centerX;
+  const fatherNameRight = marriageCenter - parentPairGap / 2;
+  const fatherNameLeft = fatherNameRight - fatherNameW;
+  const fatherNameCenter = fatherNameLeft + fatherNameW / 2;
+  const motherNameLeft = marriageCenter + parentPairGap / 2;
+  const motherNameRight = motherNameLeft + motherNameW;
+  const motherNameCenter = motherNameLeft + motherNameW / 2;
 
   const fatherBox: NameBox = {
     name: couple.father.name,

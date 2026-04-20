@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k -n vite,wrangler -c cyan,magenta \"vite build --watch\" \"wrangler dev\"",
+    "dev": "concurrently -k -n vite,wrangler -c cyan,magenta \"vite\" \"wrangler dev --var DEV:true\"",
     "build": "vite build && wrangler deploy --dry-run --outdir=dist/worker",
     "deploy": "vite build && wrangler deploy",
     "typecheck": "tsc --noEmit",
