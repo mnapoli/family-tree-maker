@@ -198,6 +198,41 @@ app.get("/api/tree.svg", (c) => {
   });
 });
 
+// ── GET /api/tree.png ── PNG by encoded share param (for MCP embeds) ─
+app.get("/api/tree.png", async (c) => {
+  const rl = consume(clientIp(c.req.raw), RENDER_LIMIT);
+  if (!rl.ok) {
+    return c.json({ error: "rate_limited", retryAfter: rl.retryAfter }, 429, {
+      "retry-after": String(rl.retryAfter ?? 1),
+    });
+  }
+  const encoded = c.req.query("d");
+  if (!encoded) return c.json({ error: "missing_d" }, 400);
+  let tree: FamilyTree;
+  try {
+    tree = decodeTree(encoded);
+  } catch (e) {
+    return c.json({ error: "invalid_d", detail: (e as Error).message }, 400);
+  }
+  const scaleRaw = Number(c.req.query("scale") ?? "2");
+  const scale = Number.isFinite(scaleRaw) ? Math.min(Math.max(scaleRaw, 0.5), 4) : 2;
+  try {
+    const png = await svgToPng(svgString(tree), { scale });
+    return new Response(png as BodyInit, {
+      status: 200,
+      headers: {
+        "content-type": "image/png",
+        "cache-control": "public, max-age=3600",
+      },
+    });
+  } catch (e) {
+    if (e instanceof RenderTooLargeError) {
+      return c.json({ error: "too_large", detail: e.message }, 413);
+    }
+    return c.json({ error: "render_failed", detail: (e as Error).message }, 500);
+  }
+});
+
 // ── POST /mcp ── Remote MCP over Streamable HTTP ─────────────────────
 app.post("/mcp", (c) => handleMcp(c.req.raw, c.env));
 

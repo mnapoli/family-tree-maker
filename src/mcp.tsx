@@ -29,6 +29,7 @@ interface JsonRpcResponse {
 }
 
 const TOOL_NAME = "render_family_tree";
+const PUBLIC_BASE = "https://family-tree-maker.mnapoli.fr";
 
 const TOOLS = [
   {
@@ -36,7 +37,9 @@ const TOOLS = [
     description:
       "Render a family tree image (PNG) from structured genealogy data. " +
       "The tree is centered on a married couple and includes optional grandparents (both sides) and children. " +
-      "Names are required; birth/death/marriage years are optional and displayed as '?' when unknown.",
+      "Names are required; birth/death/marriage years are optional and displayed as '?' when unknown. " +
+      "The tool returns a markdown snippet containing the image and an editable share link. " +
+      "IMPORTANT: include the returned markdown verbatim in your reply so the image renders inline for the user.",
     inputSchema: zodToJsonSchema(FamilyTreeSchema),
   },
 ];
@@ -129,7 +132,10 @@ async function renderTool(tree: FamilyTree) {
   const svg = renderToString(<FamilyTreeSVG tree={tree} asDocument />);
   const png = await svgToPng(svg, { scale: 2 });
   const b64 = bytesToBase64(png);
-  const shareUrl = "/?d=" + encodeTree(tree);
+  const encoded = encodeTree(tree);
+  const imageUrl = `${PUBLIC_BASE}/api/tree.png?d=${encoded}`;
+  const shareUrl = `${PUBLIC_BASE}/?d=${encoded}`;
+  const markdown = `![Family tree](${imageUrl})\n\n[Edit this tree](${shareUrl})`;
   return {
     content: [
       {
@@ -139,7 +145,7 @@ async function renderTool(tree: FamilyTree) {
       },
       {
         type: "text",
-        text: `Shareable URL path: ${shareUrl}`,
+        text: markdown,
       },
     ],
   };
