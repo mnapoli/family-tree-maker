@@ -11,6 +11,9 @@ import {
 import { svgToPng, RenderTooLargeError } from "./render-png.ts";
 import { consume } from "./rate-limit.ts";
 import { handleMcp } from "./mcp.tsx";
+import { TopNav, type NavPage } from "./components/Nav.tsx";
+import { McpDocs } from "./components/McpDocs.tsx";
+import { ApiDocs } from "./components/ApiDocs.tsx";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -24,6 +27,41 @@ function clientIp(req: Request): string {
 
 function svgString(tree: FamilyTree): string {
   return renderToString(<FamilyTreeSVG tree={tree} asDocument />);
+}
+
+function cssLink(isDev: boolean): string {
+  return isDev
+    ? `<link rel="stylesheet" href="http://localhost:5173/src/app.css" />`
+    : `<link rel="stylesheet" href="/assets/client.css" />`;
+}
+
+function headCommon(title: string): string {
+  return `<meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${title}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&display=swap" rel="stylesheet" />`;
+}
+
+function docsPage(opts: {
+  isDev: boolean;
+  title: string;
+  current: NavPage;
+  bodyHtml: string;
+}): string {
+  const nav = renderToString(<TopNav current={opts.current} />);
+  return `<!doctype html>
+<html lang="en">
+<head>
+  ${headCommon(opts.title)}
+  ${cssLink(opts.isDev)}
+</head>
+<body>
+  ${nav}
+  <main>${opts.bodyHtml}</main>
+</body>
+</html>`;
 }
 
 // ── GET / ── SSR page with form + preview ─────────────────────────────
@@ -61,24 +99,44 @@ app.get("/", (c) => {
     ? `<script type="module" src="http://localhost:5173/src/client.tsx"></script>`
     : `<script type="module" src="/assets/client.js"></script>`;
 
+  const nav = renderToString(<TopNav current="home" />);
+
   const html = `<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Family Tree Maker</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&display=swap" rel="stylesheet" />
+  ${headCommon("Family Tree Maker")}
   ${devHead}
 </head>
 <body>
+  ${nav}
   <div id="root" data-initial='${initialData.replace(/'/g, "&#39;").replace(/</g, "&lt;")}'>
     <div class="ssr-preview">${previewSvg}</div>
   </div>
   ${clientScript}
 </body>
 </html>`;
+  return c.html(html);
+});
+
+// ── GET /mcp ── MCP server documentation ─────────────────────────────
+app.get("/mcp", (c) => {
+  const html = docsPage({
+    isDev: c.env.DEV === "true",
+    title: "MCP Server — Family Tree Maker",
+    current: "mcp",
+    bodyHtml: renderToString(<McpDocs />),
+  });
+  return c.html(html);
+});
+
+// ── GET /api ── HTTP API documentation ───────────────────────────────
+app.get("/api", (c) => {
+  const html = docsPage({
+    isDev: c.env.DEV === "true",
+    title: "HTTP API — Family Tree Maker",
+    current: "api",
+    bodyHtml: renderToString(<ApiDocs />),
+  });
   return c.html(html);
 });
 
@@ -140,8 +198,8 @@ app.get("/api/tree.svg", (c) => {
   });
 });
 
-// ── /mcp ── Remote MCP over Streamable HTTP ──────────────────────────
-app.all("/mcp", (c) => handleMcp(c.req.raw, c.env));
+// ── POST /mcp ── Remote MCP over Streamable HTTP ─────────────────────
+app.post("/mcp", (c) => handleMcp(c.req.raw, c.env));
 
 // ── Static asset fallback ────────────────────────────────────────────
 app.get("*", (c) => c.env.ASSETS.fetch(c.req.raw));
