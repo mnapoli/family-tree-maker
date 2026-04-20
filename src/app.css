@@ -33,7 +33,6 @@ body {
 .top-nav-links { display: flex; gap: 0.15rem; }
 .nav-link {
   padding: 0.45rem 0.85rem;
-  border-radius: 6px;
   text-decoration: none;
   color: #666;
   font-size: 0.9rem;
@@ -61,7 +60,6 @@ body {
 .form-panel {
   background: white;
   border: 1px solid #e5e5e0;
-  border-radius: 12px;
   padding: 1.25rem;
   height: fit-content;
   position: sticky;
@@ -115,7 +113,6 @@ body {
   width: 100%;
   padding: 0.4rem 0.55rem;
   border: 1px solid #d5d5d0;
-  border-radius: 6px;
   font-size: 0.92rem;
   font-family: inherit;
   background: #fcfcf9;
@@ -147,7 +144,6 @@ input[type="number"]::-webkit-outer-spin-button {
   width: 90px;
   padding: 0.35rem 0.55rem;
   border: 1px solid #d5d5d0;
-  border-radius: 6px;
   font-family: inherit;
   background: #fcfcf9;
 }
@@ -163,7 +159,6 @@ input[type="number"]::-webkit-outer-spin-button {
   height: 28px;
   border: 1px solid #d5d5d0;
   background: #fcfcf9;
-  border-radius: 6px;
   cursor: pointer;
   font-size: 0.85rem;
   color: #666;
@@ -182,7 +177,6 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 button.btn {
   padding: 0.5rem 0.85rem;
-  border-radius: 6px;
   border: 1px solid #d5d5d0;
   background: white;
   cursor: pointer;
@@ -201,7 +195,6 @@ button.btn.primary:hover { background: #333; }
 .preview-panel {
   background: white;
   border: 1px solid #e5e5e0;
-  border-radius: 12px;
   padding: 1rem;
   overflow: auto;
   display: flex;
@@ -225,7 +218,6 @@ button.btn.primary:hover { background: #333; }
   border: 1px solid #f3c6c6;
   color: #a22;
   padding: 0.5rem 0.75rem;
-  border-radius: 6px;
   font-size: 0.85rem;
   margin-bottom: 1rem;
 }
@@ -245,7 +237,6 @@ button.btn.primary:hover { background: #333; }
   font-size: 0.78rem;
   padding: 0.6rem;
   border: 1px solid #d5d5d0;
-  border-radius: 6px;
   background: #fafaf7;
   margin-top: 0.35rem;
   resize: vertical;
@@ -291,13 +282,11 @@ button.btn.primary:hover { background: #333; }
   font-size: 0.88em;
   background: #f3f2ed;
   padding: 0.1em 0.35em;
-  border-radius: 4px;
 }
 .docs pre {
   background: #1a1a1a;
   color: #e8e8e3;
   padding: 0.9rem 1rem;
-  border-radius: 8px;
   overflow-x: auto;
   font-size: 0.82rem;
   line-height: 1.5;
@@ -324,7 +313,6 @@ button.btn.primary:hover { background: #333; }
   background: #f7f7f2;
   padding: 0.6rem 0.9rem;
   margin: 0.75rem 0;
-  border-radius: 0 6px 6px 0;
   font-size: 0.92rem;
   color: #444;
 }
