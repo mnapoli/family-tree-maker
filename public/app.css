@@ -1,0 +1,205 @@
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1a1a1a;
+  background: #fafaf7;
+  min-height: 100vh;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 1rem;
+  padding: 1.25rem;
+  min-height: 100vh;
+}
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+}
+
+.form-panel {
+  background: white;
+  border: 1px solid #e5e5e0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  height: fit-content;
+  position: sticky;
+  top: 1.25rem;
+  max-height: calc(100vh - 2.5rem);
+  overflow: auto;
+}
+
+.form-panel h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 700;
+  font-size: 1.9rem;
+  margin: 0 0 0.25rem;
+}
+.form-panel .tagline {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+}
+
+.form-panel fieldset {
+  border: none;
+  border-top: 1px solid #eee;
+  padding: 1rem 0 0.25rem;
+  margin: 0;
+}
+.form-panel legend {
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #666;
+  padding: 0 0.4rem 0 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 70px 70px;
+  gap: 0.35rem;
+  margin-bottom: 0.4rem;
+  align-items: center;
+}
+.row.couple-label {
+  grid-template-columns: 1fr 70px 70px;
+  font-size: 0.72rem;
+  color: #888;
+  margin-bottom: 0.15rem;
+}
+.row input[type="text"],
+.row input[type="number"] {
+  width: 100%;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid #d5d5d0;
+  border-radius: 6px;
+  font-size: 0.92rem;
+  font-family: inherit;
+  background: #fcfcf9;
+}
+.row input:focus {
+  outline: none;
+  border-color: #888;
+  background: white;
+}
+
+.marriage-year {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.35rem 0 0.25rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+.marriage-year input {
+  width: 90px;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #d5d5d0;
+  border-radius: 6px;
+  font-family: inherit;
+  background: #fcfcf9;
+}
+
+.children-list .row {
+  margin-bottom: 0.3rem;
+}
+.child-row {
+  grid-template-columns: 1fr 70px 70px 28px;
+}
+.btn-remove {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #d5d5d0;
+  background: #fcfcf9;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #666;
+  padding: 0;
+  line-height: 1;
+}
+.btn-remove:hover { background: #f5f5f0; }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+button.btn {
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  border: 1px solid #d5d5d0;
+  background: white;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-family: inherit;
+  color: #1a1a1a;
+}
+button.btn:hover { background: #f7f7f2; }
+button.btn.primary {
+  background: #1a1a1a;
+  color: white;
+  border-color: #1a1a1a;
+}
+button.btn.primary:hover { background: #333; }
+
+.preview-panel {
+  background: white;
+  border: 1px solid #e5e5e0;
+  border-radius: 12px;
+  padding: 1rem;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.preview-panel svg {
+  max-width: 100%;
+  height: auto;
+}
+.preview-panel.empty {
+  color: #999;
+  font-style: italic;
+  padding: 4rem 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.error-banner {
+  background: #fff4f4;
+  border: 1px solid #f3c6c6;
+  color: #a22;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.json-toggle {
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
+  color: #666;
+  cursor: pointer;
+  user-select: none;
+}
+.json-toggle:hover { color: #1a1a1a; }
+.json-editor {
+  width: 100%;
+  min-height: 180px;
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.78rem;
+  padding: 0.6rem;
+  border: 1px solid #d5d5d0;
+  border-radius: 6px;
+  background: #fafaf7;
+  margin-top: 0.35rem;
+  resize: vertical;
+}
+
+.ssr-preview { display: none; }

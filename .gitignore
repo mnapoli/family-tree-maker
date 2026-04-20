@@ -1,0 +1,7 @@
+node_modules
+dist
+.wrangler
+.dev.vars
+public/assets
+src/fonts/*.ttf
+.DS_Store
