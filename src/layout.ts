@@ -4,8 +4,8 @@ export const FONT = {
   grandparent: 44,
   parent: 52,
   child: 52,
-  date: 22,
-  marriage: 22,
+  date: 26,
+  marriage: 26,
 };
 
 const GAP = {
@@ -19,20 +19,21 @@ const GAP = {
 };
 
 const ROW = {
-  gpTextToUnderline: 10,
-  gpUnderlineDrop: 80,           // from gp underline Y down to joiner bar
-  gpJoinerToParent: 90,          // from joiner bar down to top of parent text
-  parentTextToUnderline: 10,
-  parentUnderlineToJoiner: 80,   // underline down to marriage joiner
-  joinerToChildrenBus: 100,      // marriage joiner down to children bus
-  busToChildText: 90,
+  gpTextToUnderline: 18,
+  gpUnderlineDrop: 65,           // from gp underline Y down to joiner bar
+  gpJoinerToParent: 70,          // from joiner bar down to top of parent text
+  parentTextToUnderline: 18,
+  parentUnderlineToJoiner: 65,   // underline down to marriage joiner
+  joinerToChildrenBus: 70,       // marriage joiner down to children bus
+  busToChildText: 75,
   childTextToUnderline: 8,
   underlineToDate: 28,
+  lineToNameGap: 14,             // gap between end of vertical line and top of name below
 };
 
 const UNDERLINE = {
   thickness: 1.5,
-  padName: 8,   // extend underline slightly beyond name edges
+  padName: 0,   // underline width matches the name width
 };
 
 const STROKE = {
@@ -43,7 +44,8 @@ const STROKE = {
 // Estimated text width. Cormorant Garamond is fairly narrow.
 // Factors tuned to give a slight over-estimate so underlines & layout never clip text.
 export function textWidth(text: string, fontSize: number, bold = false): number {
-  const factor = bold ? 0.5 : 0.46;
+  // Cormorant Garamond is narrow; bold is only marginally wider than regular.
+  const factor = bold ? 0.47 : 0.46;
   return text.length * fontSize * factor;
 }
 
@@ -280,7 +282,7 @@ export function layoutTree(tree: FamilyTree): TreeLayout {
       joinerY: gpJoinerY,
       joinerX1: fCenter,
       joinerX2: mCenter,
-      dropToChildY: parentTextY - FONT.parent * 0.82, // top of parent text
+      dropToChildY: parentTextY - FONT.parent * 0.82 - ROW.lineToNameGap,
     };
   };
 
@@ -316,7 +318,7 @@ export function layoutTree(tree: FamilyTree): TreeLayout {
       date,
       branchX: colCenter,
       branchTopY: childrenBusY,
-      branchBottomY: childTextY - FONT.child * 0.82,
+      branchBottomY: childTextY - FONT.child * 0.82 - ROW.lineToNameGap,
     };
   });
 

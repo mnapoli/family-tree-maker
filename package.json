@@ -8,6 +8,8 @@
     "build": "vite build && wrangler deploy --dry-run --outdir=dist/worker",
     "deploy": "vite build && wrangler deploy",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "fonts": "node scripts/fetch-fonts.mjs"
   },
   "dependencies": {
@@ -27,6 +29,7 @@
     "concurrently": "^9.1.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.5",
+    "vitest": "^4.1.4",
     "wrangler": "^3.95.0"
   }
 }

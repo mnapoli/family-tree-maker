@@ -118,7 +118,6 @@ function Child({ c }: { c: ChildLayout }) {
   return (
     <g>
       <NameText box={c.name} size={FONT.child} bold />
-      <Underline box={c.name} />
       {c.date && <DateText d={c.date} />}
       {/* vertical from bus down to child name */}
       <Line x1={c.branchX} y1={c.branchTopY} x2={c.branchX} y2={c.branchBottomY} />
