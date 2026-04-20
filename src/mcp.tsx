@@ -31,7 +31,7 @@ interface JsonRpcResponse {
 const TOOL_NAME = "render_family_tree";
 const PUBLIC_BASE = "https://family-tree-maker.mnapoli.fr";
 const UI_RESOURCE_URI = "ui://family-tree.html";
-const UI_RESOURCE_MIME = "text/html+skybridge";
+const UI_RESOURCE_MIME = "text/html;profile=mcp-app";
 
 const UI_HTML = `<!doctype html>
 <html>
@@ -61,9 +61,10 @@ const UI_HTML = `<!doctype html>
   var loadEl = document.getElementById('loading');
   var editEl = document.getElementById('edit');
   var linkEl = document.getElementById('editLink');
+  var done = false;
   function render(data) {
-    if (!data) return;
-    var sc = data.structuredContent || data;
+    if (done || !data) return;
+    var sc = data.structuredContent || data.toolOutput || data;
     if (!sc || !sc.imageUrl) return;
     imgEl.src = sc.imageUrl;
     imgEl.hidden = false;
@@ -72,17 +73,18 @@ const UI_HTML = `<!doctype html>
       linkEl.href = sc.shareUrl;
       editEl.hidden = false;
     }
+    done = true;
   }
-  // OpenAI Apps SDK global
-  try {
-    if (window.openai) {
-      if (window.openai.toolOutput) render(window.openai.toolOutput);
-      if (typeof window.openai.subscribe === 'function') {
-        window.openai.subscribe('toolOutput', render);
-      }
-    }
-  } catch (e) {}
-  // Generic MCP Apps / ChatGPT postMessage bridge
+  function tryOpenai() {
+    try {
+      if (window.openai && window.openai.toolOutput) render(window.openai.toolOutput);
+    } catch (e) {}
+  }
+  tryOpenai();
+  window.addEventListener('openai:set_globals', function(e) {
+    var g = e && e.detail && e.detail.globals;
+    if (g && g.toolOutput) render(g.toolOutput);
+  }, false);
   window.addEventListener('message', function(e) {
     var m = e.data;
     if (!m || typeof m !== 'object') return;
@@ -94,17 +96,11 @@ const UI_HTML = `<!doctype html>
       render(m.toolOutput);
     }
   }, false);
-  // Poll window.openai.toolOutput in case it populates late.
   var tries = 0;
   var iv = setInterval(function() {
     tries++;
-    try {
-      if (window.openai && window.openai.toolOutput) {
-        render(window.openai.toolOutput);
-        clearInterval(iv);
-      }
-    } catch (e) {}
-    if (tries > 40) clearInterval(iv);
+    tryOpenai();
+    if (done || tries > 50) clearInterval(iv);
   }, 100);
 })();
 </script>
@@ -117,9 +113,17 @@ const TOOLS = [
     description:
       "Render a family tree image (PNG) from structured genealogy data. " +
       "The tree is centered on a married couple and includes optional grandparents (both sides) and children. " +
-      "Names are required; birth/death/marriage years are optional and displayed as '?' when unknown.",
+      "Names are required; birth/death/marriage years are optional and displayed as '?' when unknown. " +
+      "The tool displays the rendered tree inline via a widget; do NOT repeat the imageUrl or shareUrl from " +
+      "the structured output in your reply — the widget already shows them to the user.",
     inputSchema: zodToJsonSchema(FamilyTreeSchema),
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      openWorldHint: false,
+    },
     _meta: {
+      ui: { resourceUri: UI_RESOURCE_URI },
       "openai/outputTemplate": UI_RESOURCE_URI,
       "openai/toolInvocation/invoking": "Drawing the family tree…",
       "openai/toolInvocation/invoked": "Family tree ready.",
@@ -132,6 +136,9 @@ const RESOURCES = [
     uri: UI_RESOURCE_URI,
     name: "Family tree widget",
     mimeType: UI_RESOURCE_MIME,
+    _meta: {
+      ui: { resourceUri: UI_RESOURCE_URI },
+    },
   },
 ];
 
@@ -252,6 +259,7 @@ async function renderTool(tree: FamilyTree) {
       { type: "text", text: `Family tree rendered. Edit: ${shareUrl}` },
     ],
     _meta: {
+      ui: { resourceUri: UI_RESOURCE_URI },
       "openai/outputTemplate": UI_RESOURCE_URI,
     },
   };
