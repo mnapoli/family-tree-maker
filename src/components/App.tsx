@@ -127,7 +127,14 @@ export function App({ initialTree, example, initialError }: Props) {
       <main className={"preview-panel" + (hasContent ? "" : " empty")}>
         {hasContent
           ? <FamilyTreeSVG tree={validated!} />
-          : <div>Fill in the parents' names to start.</div>}
+          : (
+            <div className="empty-state">
+              <p>Fill in the parents' names to start.</p>
+              <button type="button" className="btn btn-large" onClick={loadExample}>
+                Load example
+              </button>
+            </div>
+          )}
       </main>
     </div>
   );
