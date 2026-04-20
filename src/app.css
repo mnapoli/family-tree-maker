@@ -83,9 +83,10 @@ body {
 .form-panel fieldset {
   border: none;
   border-top: 1px solid #eee;
-  padding: 1rem 0 0.25rem;
-  margin: 0;
+  padding: 1rem 0 0.5rem;
+  margin: 1rem 0 0;
 }
+.form-panel fieldset:first-of-type { margin-top: 0; }
 .form-panel legend {
   font-weight: 600;
   font-size: 0.82rem;
@@ -170,6 +171,7 @@ input[type="number"]::-webkit-outer-spin-button {
 .actions {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 0.5rem;
   margin-top: 1rem;
   padding-top: 1rem;

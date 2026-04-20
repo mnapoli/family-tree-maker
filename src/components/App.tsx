@@ -61,6 +61,11 @@ export function App({ initialTree, example, initialError }: Props) {
     setError(null);
   }, [example]);
 
+  const clearTree = useCallback(() => {
+    setTree(EMPTY_TREE);
+    setError(null);
+  }, []);
+
   const copyUrl = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -96,6 +101,12 @@ export function App({ initialTree, example, initialError }: Props) {
   }, [validated]);
 
   const hasContent = Boolean(validated && validated.couple.father.name && validated.couple.mother.name);
+  const isEmpty =
+    !tree.couple.father.name.trim() &&
+    !tree.couple.mother.name.trim() &&
+    !tree.fatherParents &&
+    !tree.motherParents &&
+    tree.children.every((c) => !c.name.trim());
 
   return (
     <div className="app">
@@ -107,14 +118,20 @@ export function App({ initialTree, example, initialError }: Props) {
         {error && <div className="error-banner">Could not load tree from URL: {error}</div>}
         <Form tree={tree} onChange={setTree} />
         <div className="actions">
-          <button type="button" className="btn primary" onClick={downloadPng} disabled={!validated}>
-            {downloadLabel}
-          </button>
+          {isEmpty ? (
+            <button type="button" className="btn" onClick={loadExample}>
+              Load example
+            </button>
+          ) : (
+            <button type="button" className="btn" onClick={clearTree}>
+              Clear
+            </button>
+          )}
           <button type="button" className="btn" onClick={copyUrl} disabled={!validated}>
             {copyLabel}
           </button>
-          <button type="button" className="btn" onClick={loadExample}>
-            Load example
+          <button type="button" className="btn primary" onClick={downloadPng} disabled={!validated}>
+            {downloadLabel}
           </button>
         </div>
         <div className="json-toggle" onClick={() => setShowJson((v) => !v)}>
