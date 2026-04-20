@@ -8,6 +8,9 @@
     "directory": "public",
     "binding": "ASSETS"
   },
+  "routes": [
+    { "pattern": "family-tree-maker.mnapoli.fr", "custom_domain": true }
+  ],
   "rules": [
     { "type": "Data", "globs": ["**/*.ttf"], "fallthrough": true },
     { "type": "CompiledWasm", "globs": ["**/*.wasm"], "fallthrough": true }
