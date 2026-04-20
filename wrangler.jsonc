@@ -11,6 +11,9 @@
   "routes": [
     { "pattern": "family-tree-maker.mnapoli.fr", "custom_domain": true }
   ],
+  "kv_namespaces": [
+    { "binding": "TREES", "id": "7957b5317c07409aacb8d2d6e7e4aabd" }
+  ],
   "rules": [
     { "type": "Data", "globs": ["**/*.ttf"], "fallthrough": true },
     { "type": "CompiledWasm", "globs": ["**/*.wasm"], "fallthrough": true }

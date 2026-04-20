@@ -11,6 +11,7 @@ import {
 import { svgToPng, RenderTooLargeError } from "./render-png.ts";
 import { consume } from "./rate-limit.ts";
 import { handleMcp } from "./mcp.tsx";
+import { getEncoded } from "./shortener.ts";
 import { TopNav, type NavPage } from "./components/Nav.tsx";
 import { McpDocs } from "./components/McpDocs.tsx";
 import { ApiDocs } from "./components/ApiDocs.tsx";
@@ -223,6 +224,40 @@ app.get("/api/tree.png", async (c) => {
       headers: {
         "content-type": "image/png",
         "cache-control": "public, max-age=3600",
+      },
+    });
+  } catch (e) {
+    if (e instanceof RenderTooLargeError) {
+      return c.json({ error: "too_large", detail: e.message }, 413);
+    }
+    return c.json({ error: "render_failed", detail: (e as Error).message }, 500);
+  }
+});
+
+// ── GET /t/:id.png ── shortened PNG URL (used by MCP tool output) ───
+app.get("/t/:id{[A-Za-z0-9_-]+\\.png}", async (c) => {
+  const rl = consume(clientIp(c.req.raw), RENDER_LIMIT);
+  if (!rl.ok) {
+    return c.json({ error: "rate_limited", retryAfter: rl.retryAfter }, 429, {
+      "retry-after": String(rl.retryAfter ?? 1),
+    });
+  }
+  const id = c.req.param("id").replace(/\.png$/, "");
+  const encoded = await getEncoded(c.env.TREES, id);
+  if (!encoded) return c.notFound();
+  let tree: FamilyTree;
+  try {
+    tree = decodeTree(encoded);
+  } catch (e) {
+    return c.json({ error: "invalid_stored", detail: (e as Error).message }, 500);
+  }
+  try {
+    const png = await svgToPng(svgString(tree), { scale: 2 });
+    return new Response(png as BodyInit, {
+      status: 200,
+      headers: {
+        "content-type": "image/png",
+        "cache-control": "public, max-age=31536000, immutable",
       },
     });
   } catch (e) {

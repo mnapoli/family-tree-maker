@@ -7,6 +7,7 @@ import {
 } from "./schema.ts";
 import { svgToPng } from "./render-png.ts";
 import { zodToJsonSchema } from "./json-schema.ts";
+import { putShortId } from "./shortener.ts";
 
 const PROTOCOL_VERSION = "2024-11-05";
 const SERVER_INFO = {
@@ -30,82 +31,6 @@ interface JsonRpcResponse {
 
 const TOOL_NAME = "render_family_tree";
 const PUBLIC_BASE = "https://family-tree-maker.mnapoli.fr";
-const UI_RESOURCE_URI = "ui://family-tree.html";
-const UI_RESOURCE_MIME = "text/html;profile=mcp-app";
-
-const UI_HTML = `<!doctype html>
-<html>
-<head>
-<meta charset="utf-8" />
-<style>
-  body { margin: 0; padding: 0; background: white; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-  .wrap { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 0.5rem; }
-  img { max-width: 100%; height: auto; display: block; }
-  .edit { font-size: 0.85rem; color: #555; }
-  .edit a { color: #2a5fa3; text-decoration: none; }
-  .edit a:hover { text-decoration: underline; }
-  .loading { color: #999; font-style: italic; padding: 2rem; }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <img id="img" alt="Family tree" hidden />
-  <div id="loading" class="loading">Loading family tree…</div>
-  <div class="edit" id="edit" hidden>
-    <a id="editLink" target="_blank" rel="noopener">Open in Family Tree Maker ↗</a>
-  </div>
-</div>
-<script>
-(function() {
-  var imgEl = document.getElementById('img');
-  var loadEl = document.getElementById('loading');
-  var editEl = document.getElementById('edit');
-  var linkEl = document.getElementById('editLink');
-  var done = false;
-  function render(data) {
-    if (done || !data) return;
-    var sc = data.structuredContent || data.toolOutput || data;
-    if (!sc || !sc.imageUrl) return;
-    imgEl.src = sc.imageUrl;
-    imgEl.hidden = false;
-    loadEl.hidden = true;
-    if (sc.shareUrl) {
-      linkEl.href = sc.shareUrl;
-      editEl.hidden = false;
-    }
-    done = true;
-  }
-  function tryOpenai() {
-    try {
-      if (window.openai && window.openai.toolOutput) render(window.openai.toolOutput);
-    } catch (e) {}
-  }
-  tryOpenai();
-  window.addEventListener('openai:set_globals', function(e) {
-    var g = e && e.detail && e.detail.globals;
-    if (g && g.toolOutput) render(g.toolOutput);
-  }, false);
-  window.addEventListener('message', function(e) {
-    var m = e.data;
-    if (!m || typeof m !== 'object') return;
-    if (m.method === 'ui/notifications/tool-result' || m.method === 'tool/output') {
-      render(m.params);
-    } else if (m.structuredContent) {
-      render(m);
-    } else if (m.toolOutput) {
-      render(m.toolOutput);
-    }
-  }, false);
-  var tries = 0;
-  var iv = setInterval(function() {
-    tries++;
-    tryOpenai();
-    if (done || tries > 50) clearInterval(iv);
-  }, 100);
-})();
-</script>
-</body>
-</html>`;
 
 const TOOLS = [
   {
@@ -114,35 +39,18 @@ const TOOLS = [
       "Render a family tree image (PNG) from structured genealogy data. " +
       "The tree is centered on a married couple and includes optional grandparents (both sides) and children. " +
       "Names are required; birth/death/marriage years are optional and displayed as '?' when unknown. " +
-      "The tool displays the rendered tree inline via a widget; do NOT repeat the imageUrl or shareUrl from " +
-      "the structured output in your reply — the widget already shows them to the user.",
+      "Returns a short URL to the rendered PNG — share it as a markdown image `![Family tree](URL)` " +
+      "so the image appears inline in your reply.",
     inputSchema: zodToJsonSchema(FamilyTreeSchema),
     annotations: {
       readOnlyHint: true,
       destructiveHint: false,
       openWorldHint: false,
     },
-    _meta: {
-      ui: { resourceUri: UI_RESOURCE_URI },
-      "openai/outputTemplate": UI_RESOURCE_URI,
-      "openai/toolInvocation/invoking": "Drawing the family tree…",
-      "openai/toolInvocation/invoked": "Family tree ready.",
-    },
   },
 ];
 
-const RESOURCES = [
-  {
-    uri: UI_RESOURCE_URI,
-    name: "Family tree widget",
-    mimeType: UI_RESOURCE_MIME,
-    _meta: {
-      ui: { resourceUri: UI_RESOURCE_URI },
-    },
-  },
-];
-
-export async function handleMcp(req: Request, _env: Env): Promise<Response> {
+export async function handleMcp(req: Request, env: Env): Promise<Response> {
   if (req.method === "GET" || req.method === "DELETE") {
     return new Response(null, { status: 405, headers: { allow: "POST" } });
   }
@@ -162,7 +70,7 @@ export async function handleMcp(req: Request, _env: Env): Promise<Response> {
   const messages = Array.isArray(body) ? body : [body];
   const responses: JsonRpcResponse[] = [];
   for (const raw of messages) {
-    const res = await handleMessage(raw as JsonRpcRequest);
+    const res = await handleMessage(raw as JsonRpcRequest, env);
     if (res) responses.push(res);
   }
 
@@ -173,8 +81,7 @@ export async function handleMcp(req: Request, _env: Env): Promise<Response> {
   return jsonResponse(payload);
 }
 
-async function handleMessage(msg: JsonRpcRequest): Promise<JsonRpcResponse | null> {
-  // Notifications (no id) expect no response.
+async function handleMessage(msg: JsonRpcRequest, env: Env): Promise<JsonRpcResponse | null> {
   const isNotification = msg.id === undefined || msg.id === null;
   const id = msg.id ?? null;
 
@@ -183,7 +90,7 @@ async function handleMessage(msg: JsonRpcRequest): Promise<JsonRpcResponse | nul
       case "initialize":
         return ok(id, {
           protocolVersion: PROTOCOL_VERSION,
-          capabilities: { tools: {}, resources: {} },
+          capabilities: { tools: {} },
           serverInfo: SERVER_INFO,
         });
 
@@ -196,25 +103,6 @@ async function handleMessage(msg: JsonRpcRequest): Promise<JsonRpcResponse | nul
 
       case "tools/list":
         return ok(id, { tools: TOOLS });
-
-      case "resources/list":
-        return ok(id, { resources: RESOURCES });
-
-      case "resources/read": {
-        const params = msg.params as { uri?: string };
-        if (params?.uri !== UI_RESOURCE_URI) {
-          return err(id, -32602, `Unknown resource: ${params?.uri}`);
-        }
-        return ok(id, {
-          contents: [
-            {
-              uri: UI_RESOURCE_URI,
-              mimeType: UI_RESOURCE_MIME,
-              text: UI_HTML,
-            },
-          ],
-        });
-      }
 
       case "tools/call": {
         const params = msg.params as { name?: string; arguments?: unknown };
@@ -231,7 +119,7 @@ async function handleMessage(msg: JsonRpcRequest): Promise<JsonRpcResponse | nul
             }],
           });
         }
-        const result = await renderTool(parsed.data);
+        const result = await renderTool(parsed.data, env);
         return ok(id, result);
       }
 
@@ -245,23 +133,18 @@ async function handleMessage(msg: JsonRpcRequest): Promise<JsonRpcResponse | nul
   }
 }
 
-async function renderTool(tree: FamilyTree) {
+async function renderTool(tree: FamilyTree, env: Env) {
   const svg = renderToString(<FamilyTreeSVG tree={tree} asDocument />);
   const png = await svgToPng(svg, { scale: 2 });
   const b64 = bytesToBase64(png);
   const encoded = encodeTree(tree);
-  const imageUrl = `${PUBLIC_BASE}/api/tree.png?d=${encoded}`;
-  const shareUrl = `${PUBLIC_BASE}/?d=${encoded}`;
+  const shortId = await putShortId(env.TREES, encoded);
+  const imageUrl = `${PUBLIC_BASE}/t/${shortId}.png`;
   return {
-    structuredContent: { imageUrl, shareUrl },
     content: [
       { type: "image", data: b64, mimeType: "image/png" },
-      { type: "text", text: `Family tree rendered. Edit: ${shareUrl}` },
+      { type: "text", text: `![Family tree](${imageUrl})` },
     ],
-    _meta: {
-      ui: { resourceUri: UI_RESOURCE_URI },
-      "openai/outputTemplate": UI_RESOURCE_URI,
-    },
   };
 }
 
