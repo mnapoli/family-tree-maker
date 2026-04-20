@@ -30,6 +30,86 @@ interface JsonRpcResponse {
 
 const TOOL_NAME = "render_family_tree";
 const PUBLIC_BASE = "https://family-tree-maker.mnapoli.fr";
+const UI_RESOURCE_URI = "ui://family-tree.html";
+const UI_RESOURCE_MIME = "text/html+skybridge";
+
+const UI_HTML = `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  body { margin: 0; padding: 0; background: white; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  .wrap { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 0.5rem; }
+  img { max-width: 100%; height: auto; display: block; }
+  .edit { font-size: 0.85rem; color: #555; }
+  .edit a { color: #2a5fa3; text-decoration: none; }
+  .edit a:hover { text-decoration: underline; }
+  .loading { color: #999; font-style: italic; padding: 2rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <img id="img" alt="Family tree" hidden />
+  <div id="loading" class="loading">Loading family tree…</div>
+  <div class="edit" id="edit" hidden>
+    <a id="editLink" target="_blank" rel="noopener">Open in Family Tree Maker ↗</a>
+  </div>
+</div>
+<script>
+(function() {
+  var imgEl = document.getElementById('img');
+  var loadEl = document.getElementById('loading');
+  var editEl = document.getElementById('edit');
+  var linkEl = document.getElementById('editLink');
+  function render(data) {
+    if (!data) return;
+    var sc = data.structuredContent || data;
+    if (!sc || !sc.imageUrl) return;
+    imgEl.src = sc.imageUrl;
+    imgEl.hidden = false;
+    loadEl.hidden = true;
+    if (sc.shareUrl) {
+      linkEl.href = sc.shareUrl;
+      editEl.hidden = false;
+    }
+  }
+  // OpenAI Apps SDK global
+  try {
+    if (window.openai) {
+      if (window.openai.toolOutput) render(window.openai.toolOutput);
+      if (typeof window.openai.subscribe === 'function') {
+        window.openai.subscribe('toolOutput', render);
+      }
+    }
+  } catch (e) {}
+  // Generic MCP Apps / ChatGPT postMessage bridge
+  window.addEventListener('message', function(e) {
+    var m = e.data;
+    if (!m || typeof m !== 'object') return;
+    if (m.method === 'ui/notifications/tool-result' || m.method === 'tool/output') {
+      render(m.params);
+    } else if (m.structuredContent) {
+      render(m);
+    } else if (m.toolOutput) {
+      render(m.toolOutput);
+    }
+  }, false);
+  // Poll window.openai.toolOutput in case it populates late.
+  var tries = 0;
+  var iv = setInterval(function() {
+    tries++;
+    try {
+      if (window.openai && window.openai.toolOutput) {
+        render(window.openai.toolOutput);
+        clearInterval(iv);
+      }
+    } catch (e) {}
+    if (tries > 40) clearInterval(iv);
+  }, 100);
+})();
+</script>
+</body>
+</html>`;
 
 const TOOLS = [
   {
@@ -37,10 +117,21 @@ const TOOLS = [
     description:
       "Render a family tree image (PNG) from structured genealogy data. " +
       "The tree is centered on a married couple and includes optional grandparents (both sides) and children. " +
-      "Names are required; birth/death/marriage years are optional and displayed as '?' when unknown. " +
-      "The tool returns a markdown snippet containing the image and an editable share link. " +
-      "IMPORTANT: include the returned markdown verbatim in your reply so the image renders inline for the user.",
+      "Names are required; birth/death/marriage years are optional and displayed as '?' when unknown.",
     inputSchema: zodToJsonSchema(FamilyTreeSchema),
+    _meta: {
+      "openai/outputTemplate": UI_RESOURCE_URI,
+      "openai/toolInvocation/invoking": "Drawing the family tree…",
+      "openai/toolInvocation/invoked": "Family tree ready.",
+    },
+  },
+];
+
+const RESOURCES = [
+  {
+    uri: UI_RESOURCE_URI,
+    name: "Family tree widget",
+    mimeType: UI_RESOURCE_MIME,
   },
 ];
 
@@ -85,7 +176,7 @@ async function handleMessage(msg: JsonRpcRequest): Promise<JsonRpcResponse | nul
       case "initialize":
         return ok(id, {
           protocolVersion: PROTOCOL_VERSION,
-          capabilities: { tools: {} },
+          capabilities: { tools: {}, resources: {} },
           serverInfo: SERVER_INFO,
         });
 
@@ -98,6 +189,25 @@ async function handleMessage(msg: JsonRpcRequest): Promise<JsonRpcResponse | nul
 
       case "tools/list":
         return ok(id, { tools: TOOLS });
+
+      case "resources/list":
+        return ok(id, { resources: RESOURCES });
+
+      case "resources/read": {
+        const params = msg.params as { uri?: string };
+        if (params?.uri !== UI_RESOURCE_URI) {
+          return err(id, -32602, `Unknown resource: ${params?.uri}`);
+        }
+        return ok(id, {
+          contents: [
+            {
+              uri: UI_RESOURCE_URI,
+              mimeType: UI_RESOURCE_MIME,
+              text: UI_HTML,
+            },
+          ],
+        });
+      }
 
       case "tools/call": {
         const params = msg.params as { name?: string; arguments?: unknown };
@@ -135,19 +245,15 @@ async function renderTool(tree: FamilyTree) {
   const encoded = encodeTree(tree);
   const imageUrl = `${PUBLIC_BASE}/api/tree.png?d=${encoded}`;
   const shareUrl = `${PUBLIC_BASE}/?d=${encoded}`;
-  const markdown = `![Family tree](${imageUrl})\n\n[Edit this tree](${shareUrl})`;
   return {
+    structuredContent: { imageUrl, shareUrl },
     content: [
-      {
-        type: "image",
-        data: b64,
-        mimeType: "image/png",
-      },
-      {
-        type: "text",
-        text: markdown,
-      },
+      { type: "image", data: b64, mimeType: "image/png" },
+      { type: "text", text: `Family tree rendered. Edit: ${shareUrl}` },
     ],
+    _meta: {
+      "openai/outputTemplate": UI_RESOURCE_URI,
+    },
   };
 }
 
