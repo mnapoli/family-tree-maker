@@ -52,9 +52,6 @@ export const EXAMPLE_TREE: FamilyTree = {
     { name: "Rosaria", birth: 1891 },
     { name: "Giuseppe", birth: 1892 },
     { name: "Girolamo" },
-    { name: "Lorenzo" },
-    { name: "Francesco" },
-    { name: "Teresa" },
     { name: "Mario" },
   ],
 };
