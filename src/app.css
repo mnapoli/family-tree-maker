@@ -40,6 +40,11 @@ body {
 }
 .nav-link:hover { color: #1a1a1a; background: #f7f7f2; }
 .nav-link.active { color: #1a1a1a; background: #f0efe8; }
+.nav-github {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 0.6rem;
+}
 @media (max-width: 540px) {
   .top-nav { padding: 0 0.9rem; }
   .nav-link { padding: 0.45rem 0.55rem; }
