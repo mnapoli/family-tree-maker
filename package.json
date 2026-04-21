@@ -1,6 +1,14 @@
 {
   "name": "family-tree-maker",
   "version": "0.1.0",
+  "description": "Minimalist family tree renderer — SSR web UI, HTTP API, and MCP server, all on Cloudflare Workers.",
+  "author": "Matthieu Napoli",
+  "license": "MIT",
+  "homepage": "https://family-tree-maker.mnapoli.fr",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mnapoli/family-tree-maker.git"
+  },
   "private": true,
   "type": "module",
   "scripts": {
