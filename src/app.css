@@ -55,6 +55,12 @@ body {
 }
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr; }
+  .preview-panel { order: -1; }
+  .form-panel {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 .form-panel {

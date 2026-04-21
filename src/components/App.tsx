@@ -27,7 +27,7 @@ export function App({ initialTree, example, initialError }: Props) {
   const [error, setError] = useState<string | null>(initialError);
   const [showJson, setShowJson] = useState(false);
   const [copyLabel, setCopyLabel] = useState("Copy URL");
-  const [downloadLabel, setDownloadLabel] = useState("Download PNG");
+  const [downloadLabel, setDownloadLabel] = useState("Download");
   const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const validated = useMemo(() => {
@@ -97,7 +97,7 @@ export function App({ initialTree, example, initialError }: Props) {
     } catch (e) {
       setDownloadLabel("Failed: " + (e as Error).message);
     }
-    setTimeout(() => setDownloadLabel("Download PNG"), 2000);
+    setTimeout(() => setDownloadLabel("Download"), 2000);
   }, [validated]);
 
   const hasContent = Boolean(validated && validated.couple.father.name && validated.couple.mother.name);
