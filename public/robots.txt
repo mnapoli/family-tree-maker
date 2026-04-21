@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://family-tree-maker.mnapoli.fr/sitemap.xml

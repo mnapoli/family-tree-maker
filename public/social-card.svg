@@ -1,0 +1,87 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <title>Family Tree Maker</title>
+  <desc>Social card for family-tree-maker.mnapoli.fr — title and tagline on the left, example family tree on the right.</desc>
+
+  <rect x="0" y="0" width="1200" height="630" fill="#FAFAF7"/>
+
+  <!-- LEFT: title block -->
+  <g font-family="'Cormorant Garamond', Georgia, serif" fill="#111111">
+    <text x="80" y="260" font-size="76" font-weight="500" letter-spacing="-1">Family Tree</text>
+    <text x="80" y="340" font-size="76" font-weight="500" letter-spacing="-1">Maker</text>
+    <line x1="80" y1="370" x2="240" y2="370" stroke="#111111" stroke-width="1"/>
+    <text x="80" y="410" font-size="24" font-style="italic" fill="#555555" font-weight="400">Minimalist family tree diagrams.</text>
+    <text x="80" y="560" font-size="18" fill="#888888" letter-spacing="1.5">FAMILY-TREE-MAKER.MNAPOLI.FR</text>
+  </g>
+
+  <!-- Divider -->
+  <line x1="560" y1="110" x2="560" y2="520" stroke="#111111" stroke-width="0.5" opacity="0.2"/>
+
+  <!-- RIGHT: tree -->
+  <g font-family="'Cormorant Garamond', Georgia, serif" fill="#111111" transform="translate(595, 110) scale(0.82)">
+
+    <!-- Gen 1: grandparents -->
+    <g font-size="18" fill="#888888">
+      <text x="30" y="30">Girolamo Napoli</text>
+      <line x1="30" y1="38" x2="165" y2="38" stroke="#888888" stroke-width="0.5"/>
+      <text x="195" y="30">Teresa Poma</text>
+      <line x1="195" y1="38" x2="305" y2="38" stroke="#888888" stroke-width="0.5"/>
+
+      <text x="355" y="30">Nicolo Grammatico</text>
+      <line x1="355" y1="38" x2="510" y2="38" stroke="#888888" stroke-width="0.5"/>
+      <text x="535" y="30">Rosaria Rizzo</text>
+      <line x1="535" y1="38" x2="655" y2="38" stroke="#888888" stroke-width="0.5"/>
+    </g>
+
+    <!-- Connectors: gen 1 -> gen 2 -->
+    <g stroke="#111111" stroke-width="0.5" fill="none">
+      <path d="M 95 38 L 95 60 L 170 60 L 170 38"/>
+      <line x1="132" y1="60" x2="132" y2="90"/>
+      <path d="M 432 38 L 432 60 L 595 60 L 595 38"/>
+      <line x1="513" y1="60" x2="513" y2="90"/>
+    </g>
+
+    <!-- Gen 2: Vito + Giuseppa -->
+    <g font-size="30" font-weight="500">
+      <text x="132" y="120" text-anchor="middle">Vito Napoli</text>
+      <line x1="50" y1="132" x2="215" y2="132" stroke="#111111" stroke-width="1"/>
+      <text x="513" y="120" text-anchor="middle">Giuseppa Grammatico</text>
+      <line x1="370" y1="132" x2="655" y2="132" stroke="#111111" stroke-width="1"/>
+    </g>
+    <g font-size="13" fill="#888888">
+      <text x="30" y="118" text-anchor="end">1854 - ?</text>
+      <text x="680" y="118">1860 - ?</text>
+    </g>
+
+    <!-- Marriage bracket -->
+    <g stroke="#111111" stroke-width="0.5" fill="none">
+      <path d="M 132 132 L 132 170 L 513 170 L 513 132"/>
+      <line x1="322" y1="170" x2="322" y2="210"/>
+    </g>
+    <text x="322" y="165" text-anchor="middle" font-size="14" fill="#555555" font-style="italic" font-family="'Cormorant Garamond', Georgia, serif">1876</text>
+
+    <!-- Children distribution bar -->
+    <g stroke="#111111" stroke-width="0.5" fill="none">
+      <line x1="70" y1="210" x2="580" y2="210"/>
+      <line x1="70" y1="210" x2="70" y2="240"/>
+      <line x1="197" y1="210" x2="197" y2="240"/>
+      <line x1="322" y1="210" x2="322" y2="240"/>
+      <line x1="450" y1="210" x2="450" y2="240"/>
+      <line x1="580" y1="210" x2="580" y2="240"/>
+    </g>
+
+    <!-- Children -->
+    <g font-size="26" font-weight="500">
+      <text x="70" y="275" text-anchor="middle">Nicolo</text>
+      <text x="197" y="275" text-anchor="middle">Rosaria</text>
+      <text x="322" y="275" text-anchor="middle">Giuseppe</text>
+      <text x="450" y="275" text-anchor="middle">Girolamo</text>
+      <text x="580" y="275" text-anchor="middle">Mario</text>
+    </g>
+    <g font-size="12" fill="#888888">
+      <text x="70" y="300" text-anchor="middle">1880 - ?</text>
+      <text x="197" y="300" text-anchor="middle">1891 - ?</text>
+      <text x="322" y="300" text-anchor="middle">1892 - ?</text>
+    </g>
+
+  </g>
+</svg>

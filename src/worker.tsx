@@ -35,10 +35,41 @@ function cssLink(isDev: boolean): string {
     : `<link rel="stylesheet" href="/assets/client.css" />`;
 }
 
-function headCommon(title: string): string {
+const SITE_URL = "https://family-tree-maker.mnapoli.fr";
+const SITE_NAME = "Family Tree Maker";
+const SOCIAL_IMAGE = `${SITE_URL}/social-card.png`;
+
+function escAttr(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+}
+
+function headCommon(opts: {
+  title: string;
+  description: string;
+  path: string;
+}): string {
+  const canonical = SITE_URL + opts.path;
+  const t = escAttr(opts.title);
+  const d = escAttr(opts.description);
   return `<meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${title}</title>
+  <title>${t}</title>
+  <meta name="description" content="${d}" />
+  <link rel="canonical" href="${canonical}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="${SITE_NAME}" />
+  <meta property="og:title" content="${t}" />
+  <meta property="og:description" content="${d}" />
+  <meta property="og:url" content="${canonical}" />
+  <meta property="og:image" content="${SOCIAL_IMAGE}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Family Tree Maker — minimalist family tree diagrams" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${t}" />
+  <meta name="twitter:description" content="${d}" />
+  <meta name="twitter:image" content="${SOCIAL_IMAGE}" />
+  <meta name="theme-color" content="#fafaf7" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&display=swap" rel="stylesheet" />`;
@@ -47,6 +78,8 @@ function headCommon(title: string): string {
 function docsPage(opts: {
   isDev: boolean;
   title: string;
+  description: string;
+  path: string;
   current: NavPage;
   bodyHtml: string;
 }): string {
@@ -54,7 +87,7 @@ function docsPage(opts: {
   return `<!doctype html>
 <html lang="en">
 <head>
-  ${headCommon(opts.title)}
+  ${headCommon({ title: opts.title, description: opts.description, path: opts.path })}
   ${cssLink(opts.isDev)}
 </head>
 <body>
@@ -104,7 +137,11 @@ app.get("/", (c) => {
   const html = `<!doctype html>
 <html lang="en">
 <head>
-  ${headCommon("Family Tree Maker")}
+  ${headCommon({
+    title: "Family Tree Maker — minimalist family tree diagrams",
+    description: "Create and share minimalist family tree diagrams. Web UI, HTTP API, and MCP server for ChatGPT & Claude — free, no signup.",
+    path: "/",
+  })}
   ${devHead}
 </head>
 <body>
@@ -123,6 +160,8 @@ app.get("/mcp", (c) => {
   const html = docsPage({
     isDev: c.env.DEV === "true",
     title: "MCP Server — Family Tree Maker",
+    description: "Render family tree images directly from ChatGPT or Claude via the Family Tree Maker MCP server (remote, Streamable HTTP).",
+    path: "/mcp",
     current: "mcp",
     bodyHtml: renderToString(<McpDocs />),
   });
@@ -134,6 +173,8 @@ app.get("/api", (c) => {
   const html = docsPage({
     isDev: c.env.DEV === "true",
     title: "HTTP API — Family Tree Maker",
+    description: "HTTP API to render family tree diagrams as PNG or SVG from a JSON payload.",
+    path: "/api",
     current: "api",
     bodyHtml: renderToString(<ApiDocs />),
   });
