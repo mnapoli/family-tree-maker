@@ -14,8 +14,8 @@ const GAP = {
   parentPair: 200,        // min gap between father name and mother name (hosts marriage year)
   dateMargin: 40,         // between parent name and its date
   gpPairBlocks: 140,      // min gap between left and right grandparent blocks
-  marginX: 100,
-  marginY: 80,
+  marginX: 20,
+  marginY: 40,
 };
 
 const ROW = {
@@ -166,9 +166,8 @@ export function layoutTree(tree: FamilyTree): TreeLayout {
     rightGpW ? parentPairGap / 2 + motherNameW / 2 + rightGpW / 2 : 0,
     childrenContentW / 2,
   );
-  const halfExtent = Math.max(leftFromMarriage, rightFromMarriage);
-  const width = 2 * halfExtent + 2 * GAP.marginX;
-  const centerX = width / 2;
+  const width = leftFromMarriage + rightFromMarriage + 2 * GAP.marginX;
+  const centerX = leftFromMarriage + GAP.marginX;
 
   // ── vertical positions ─────────────────────────────────────────────
   let y = GAP.marginY;
