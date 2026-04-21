@@ -28,7 +28,8 @@ export function McpDocs() {
       <p>
         It takes a <code>FamilyTree</code> JSON object (see the{" "}
         <a href="/api">API docs</a> for the full schema) and returns
-        a PNG image of the tree plus a shareable URL back into this app.
+        a URL to a PNG image of the tree, which the assistant surfaces as
+        a clickable link in its reply.
       </p>
 
       <h2>Use it in Claude</h2>
@@ -88,8 +89,7 @@ export function McpDocs() {
       </div>
       <p>
         The assistant will call <code>render_family_tree</code> with a
-        structured payload and return the PNG inline, along with a link back
-        to this app for further editing.
+        structured payload and include a link to the rendered PNG in its reply.
       </p>
     </article>
   );
