@@ -8,9 +8,7 @@ Render minimalist family tree diagrams:
 
 **[family-tree-maker.mnapoli.fr](https://family-tree-maker.mnapoli.fr)**
 
-Family tree example:
-
-[![Example family tree diagram](example.png)](https://family-tree-maker.mnapoli.fr)
+[![](public/social-card.png)](https://family-tree-maker.mnapoli.fr)
 
 ## Usage
 
