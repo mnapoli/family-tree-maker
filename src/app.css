@@ -219,7 +219,7 @@ button.btn.btn-large {
   justify-content: center;
 }
 .preview-panel svg {
-  max-width: 100%;
+  width: 100%;
   height: auto;
 }
 .preview-panel.empty {
