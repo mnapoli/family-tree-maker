@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <title>Family Tree Maker favicon — minimal bracket</title>
+  <rect width="512" height="512" fill="#FAFAF7"/>
+  <g stroke="#111111" stroke-width="22" fill="none" stroke-linecap="square">
+    <!-- Two parents (short lines) -->
+    <line x1="100" y1="170" x2="210" y2="170"/>
+    <line x1="302" y1="170" x2="412" y2="170"/>
+    <!-- Bracket down -->
+    <line x1="155" y1="170" x2="155" y2="240"/>
+    <line x1="357" y1="170" x2="357" y2="240"/>
+    <line x1="155" y1="240" x2="357" y2="240"/>
+    <!-- Trunk -->
+    <line x1="256" y1="240" x2="256" y2="330"/>
+    <!-- Child (underline) -->
+    <line x1="180" y1="360" x2="332" y2="360"/>
+  </g>
+</svg>
