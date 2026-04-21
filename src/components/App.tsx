@@ -41,20 +41,31 @@ export function App({ initialTree, example, initialError }: Props) {
     return r.success ? r.data : null;
   }, [tree]);
 
+  const isEmpty =
+    !tree.couple.father.name.trim() &&
+    !tree.couple.mother.name.trim() &&
+    !tree.fatherParents &&
+    !tree.motherParents &&
+    tree.children.every((c) => !c.name.trim());
+
   // Keep ?d= in sync with the current tree (debounced).
   useEffect(() => {
     if (syncTimer.current) clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(() => {
-      if (!validated) return;
-      const encoded = encodeTree(validated);
       const url = new URL(window.location.href);
-      url.searchParams.set("d", encoded);
-      window.history.replaceState(null, "", url.toString());
+      if (isEmpty) {
+        url.searchParams.delete("d");
+      } else if (validated) {
+        url.searchParams.set("d", encodeTree(validated));
+      } else {
+        return;
+      }
+      window.history.replaceState(null, "", url.pathname + url.search + url.hash);
     }, 300);
     return () => {
       if (syncTimer.current) clearTimeout(syncTimer.current);
     };
-  }, [validated]);
+  }, [validated, isEmpty]);
 
   const loadExample = useCallback(() => {
     setTree(example);
@@ -101,12 +112,6 @@ export function App({ initialTree, example, initialError }: Props) {
   }, [validated]);
 
   const hasContent = Boolean(validated && validated.couple.father.name && validated.couple.mother.name);
-  const isEmpty =
-    !tree.couple.father.name.trim() &&
-    !tree.couple.mother.name.trim() &&
-    !tree.fatherParents &&
-    !tree.motherParents &&
-    tree.children.every((c) => !c.name.trim());
 
   return (
     <div className="app">
