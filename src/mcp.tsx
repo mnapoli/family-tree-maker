@@ -1,13 +1,9 @@
-import { renderToString } from "react-dom/server";
-import { FamilyTreeSVG } from "./tree.tsx";
 import {
   FamilyTreeSchema,
   encodeTree,
   type FamilyTree,
 } from "./schema.ts";
-import { svgToPng } from "./render-png.ts";
 import { zodToJsonSchema } from "./json-schema.ts";
-import { putShortId } from "./shortener.ts";
 
 const PROTOCOL_VERSION = "2024-11-05";
 const SERVER_INFO = {
@@ -39,8 +35,8 @@ const TOOLS = [
       "Render a family tree image (PNG) from structured genealogy data. " +
       "The tree is centered on a married couple and includes optional grandparents (both sides) and children. " +
       "Names are required; birth/death/marriage years are optional and displayed as '?' when unknown. " +
-      "Returns a short URL to the rendered PNG — share it as a markdown image `![Family tree](URL)` " +
-      "so the image appears inline in your reply.",
+      "The tool returns a single image URL. " +
+      "IMPORTANT: include that URL as a plain link in your reply to the user (e.g. \"View the tree: <url>\") so they can click it to see the image.",
     inputSchema: zodToJsonSchema(FamilyTreeSchema),
     annotations: {
       readOnlyHint: true,
@@ -50,7 +46,7 @@ const TOOLS = [
   },
 ];
 
-export async function handleMcp(req: Request, env: Env): Promise<Response> {
+export async function handleMcp(req: Request, _env: Env): Promise<Response> {
   if (req.method === "GET" || req.method === "DELETE") {
     return new Response(null, { status: 405, headers: { allow: "POST" } });
   }
@@ -70,7 +66,7 @@ export async function handleMcp(req: Request, env: Env): Promise<Response> {
   const messages = Array.isArray(body) ? body : [body];
   const responses: JsonRpcResponse[] = [];
   for (const raw of messages) {
-    const res = await handleMessage(raw as JsonRpcRequest, env);
+    const res = await handleMessage(raw as JsonRpcRequest);
     if (res) responses.push(res);
   }
 
@@ -81,7 +77,8 @@ export async function handleMcp(req: Request, env: Env): Promise<Response> {
   return jsonResponse(payload);
 }
 
-async function handleMessage(msg: JsonRpcRequest, env: Env): Promise<JsonRpcResponse | null> {
+async function handleMessage(msg: JsonRpcRequest): Promise<JsonRpcResponse | null> {
+  // Notifications (no id) expect no response.
   const isNotification = msg.id === undefined || msg.id === null;
   const id = msg.id ?? null;
 
@@ -119,8 +116,7 @@ async function handleMessage(msg: JsonRpcRequest, env: Env): Promise<JsonRpcResp
             }],
           });
         }
-        const result = await renderTool(parsed.data, env);
-        return ok(id, result);
+        return ok(id, renderTool(parsed.data));
       }
 
       default:
@@ -133,28 +129,18 @@ async function handleMessage(msg: JsonRpcRequest, env: Env): Promise<JsonRpcResp
   }
 }
 
-async function renderTool(tree: FamilyTree, env: Env) {
-  const svg = renderToString(<FamilyTreeSVG tree={tree} asDocument />);
-  const png = await svgToPng(svg, { scale: 2 });
-  const b64 = bytesToBase64(png);
-  const encoded = encodeTree(tree);
-  const shortId = await putShortId(env.TREES, encoded);
-  const imageUrl = `${PUBLIC_BASE}/t/${shortId}.png`;
+function renderTool(tree: FamilyTree) {
+  const imageUrl = `${PUBLIC_BASE}/api/tree.png?d=${encodeTree(tree)}`;
   return {
     content: [
-      { type: "image", data: b64, mimeType: "image/png" },
-      { type: "text", text: `![Family tree](${imageUrl})` },
+      {
+        type: "text",
+        text:
+          `Family tree rendered. Image URL: ${imageUrl}\n\n` +
+          `Share this URL with the user as a clickable link so they can view the tree.`,
+      },
     ],
   };
-}
-
-function bytesToBase64(bytes: Uint8Array): string {
-  let binary = "";
-  const chunk = 0x8000;
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-  }
-  return btoa(binary);
 }
 
 function ok(id: string | number | null, result: unknown): JsonRpcResponse {
