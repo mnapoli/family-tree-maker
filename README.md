@@ -1,4 +1,4 @@
-# Family Tree Maker
+[![](public/social-card.png)](https://family-tree-maker.mnapoli.fr)
 
 Render minimalist family tree diagrams:
 
@@ -7,8 +7,6 @@ Render minimalist family tree diagrams:
 - ChatGPT / Claude integration via MCP
 
 **[family-tree-maker.mnapoli.fr](https://family-tree-maker.mnapoli.fr)**
-
-[![](public/social-card.png)](https://family-tree-maker.mnapoli.fr)
 
 ## Usage
 
